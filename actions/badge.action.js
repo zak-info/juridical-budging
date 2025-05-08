@@ -1,6 +1,8 @@
 "use server"
 import nodemailer from 'nodemailer';
-import puppeteer from 'puppeteer';
+import chromium from 'chrome-aws-lambda';
+import puppeteer from 'puppeteer-core';
+
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
@@ -11,28 +13,6 @@ import User from '@/models/user.model';
 
 
 
-export async function getCondidats() {
-    try {
-        await connect();
-        const condidats = await User.find({});
-        return { success: true, condidats };
-    } catch (error) {
-        console.error("Error creating MongoDB Medicationtable", error); // Log the error for debugging
-        return { success: false, msg: "An unknown error occurred. " + error.message };
-    }
-}
-
-export async function createCondidat(data) {
-    try {   
-        await connect();
-        const condidat = await User.create(data);
-        revalidatePath("/", "page")
-        return { success: true, condidat };
-    } catch (error) {
-        console.error("Error creating MongoDB Condidat", error); // Log the error for debugging
-        return { success: false, msg: "An unknown error occurred. " + error.message };
-    }
-}
 
 
 export async function SendBudge(body) {
@@ -145,8 +125,9 @@ export async function SendBudge(body) {
 
     try {
         const browser = await puppeteer.launch({
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+            args: chromium.args,
+            executablePath: await chromium.executablePath || '',
+            headless: chromium.headless,
         });
         const page = await browser.newPage();
         await page.setContent(html, { waitUntil: 'domcontentloaded' });
@@ -185,5 +166,30 @@ export async function SendBudge(body) {
     } catch (err) {
         console.error('❌ Error generating badge:', err);
         return { success: false, error: err };
+    }
+}
+
+
+
+export async function getCondidats() {
+    try {
+        await connect();
+        const condidats = await User.find({});
+        return { success: true, condidats };
+    } catch (error) {
+        console.error("Error creating MongoDB Medicationtable", error); // Log the error for debugging
+        return { success: false, msg: "An unknown error occurred. " + error.message };
+    }
+}
+
+export async function createCondidat(data) {
+    try {
+        await connect();
+        const condidat = await User.create(data);
+        revalidatePath("/", "page")
+        return { success: true, condidat };
+    } catch (error) {
+        console.error("Error creating MongoDB Condidat", error); // Log the error for debugging
+        return { success: false, msg: "An unknown error occurred. " + error.message };
     }
 }
