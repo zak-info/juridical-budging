@@ -25,7 +25,7 @@ const ValidateBudge = ({setData }) => {
         const result = await SendBudge(credentials);
         if (result?.success) {
             const resultCond = await createCondidat(credentials)
-            setData(prev => ([resultCond?.condidat,...prev]))
+            setData(prev => ([JSON.parse(resultCond?.condidat),...prev]))
         }
         setCredentials(null)
         onClose()

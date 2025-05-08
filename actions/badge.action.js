@@ -123,8 +123,9 @@ export async function SendBudge(body) {
 
     try {
         const browser = await puppeteer.launch({
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+            executablePath: '/usr/bin/chromium-browser', // Or '/snap/bin/chromium' if using Snap
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
         const page = await browser.newPage();
         await page.setContent(html, { waitUntil: 'domcontentloaded' });
@@ -180,11 +181,11 @@ export async function getCondidats() {
 }
 
 export async function createCondidat(data) {
-    try {   
+    try {
         await connect();
         const condidat = await User.create(data);
         revalidatePath("/", "page")
-        return { success: true, condidat };
+        return { success: true, condidat: JSON.stringify(condidat) };
     } catch (error) {
         console.error("Error creating MongoDB Condidat", error); // Log the error for debugging
         return { success: false, msg: "An unknown error occurred. " + error.message };
