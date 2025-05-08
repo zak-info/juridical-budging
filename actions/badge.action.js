@@ -1,11 +1,9 @@
 "use server"
 import nodemailer from 'nodemailer';
-import puppeteer from 'puppeteer';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { connect } from '@/models/mongodb';
-import Condidat from '@/models/condidat.model';
 import { revalidatePath } from 'next/cache';
 import User from '@/models/user.model';
 
