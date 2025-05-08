@@ -1,26 +1,29 @@
 "use server"
 import nodemailer from 'nodemailer';
+import puppeteer from 'puppeteer';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { connect } from '@/models/mongodb';
+import Condidat from '@/models/condidat.model';
 import { revalidatePath } from 'next/cache';
 import User from '@/models/user.model';
 
 
-import nodeHtmlToImage from 'node-html-to-image';
+
 
 
 export async function SendBudge(body) {
-  console.log("body :", body);
-  const { fullname, fonction, type, email } = body;
+    console.log("body :", body);
+    const { fullname, fonction, type, email } = body;
 
-  const alifLogoPath = path.join(process.cwd(), 'public', 'images', 'aliflogo.png');
-  const qrCodePath = path.join(process.cwd(), 'public', 'images', 'qrcode.png');
-  const alifLogoBase64 = fs.readFileSync(alifLogoPath, { encoding: 'base64' });
-  const qrCodeBase64 = fs.readFileSync(qrCodePath, { encoding: 'base64' });
+    const alifLogoPath = path.join(process.cwd(), 'public', 'images', 'aliflogo.png');
+    const qrCodePath = path.join(process.cwd(), 'public', 'images', 'qrcode.png');
+    const alifLogoBase64 = fs.readFileSync(alifLogoPath, { encoding: 'base64' });
+    const qrCodeBase64 = fs.readFileSync(qrCodePath, { encoding: 'base64' });
 
-  const html = `<!DOCTYPE html>
+
+    const html = `
     <html>
       <head>
         <style>
@@ -37,67 +40,74 @@ export async function SendBudge(body) {
             background: #f0f0f0;
           }
           .badge {
-            width: 360px;
-            height: 540px;
+            width: 22.5rem;   /* 360px */
+            height: 33.75rem; /* 540px */
             background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 1rem; /* 16px */
+            box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1); /* 4px 12px */
             text-align: center;
-            padding: 24px 16px;
+            padding: 1.5rem 1rem; /* 24px 16px */
             box-sizing: border-box;
             position: relative;
           }
           .partners {
             display: flex;
             justify-content: space-between;
-            font-size: 12px;
+            font-size: 0.75rem; /* 12px */
             color: #333;
-            margin-bottom: 8px;
+            margin-bottom: 0.5rem; /* 8px */
           }
           .logo {
-            margin: 8px 0;
+            margin: 0.5rem 0; /* 8px */
           }
           .main-title {
-            font-size: 36px;
+            font-size: 3.25rem; /* 36px */
             color: #1e3a8a;
             font-weight: bold;
           }
           .main-title span {
-            font-size: 18px;
+            font-size: 2rem; /* 18px */
             color: #facc15;
             font-weight: bold;
+
           }
           .subtitle {
-            font-size: 16px;
+            font-size: 1.5rem; /* 16px */
             color: #1e3a8a;
-            margin: 8px 0;
+            margin: 0.5rem 0; /* 8px */
           }
           .type {
             background: #1e3a8a;
             color: white;
-            padding: 8px 0;
-            font-size: 18px;
+            padding: 0.5rem 0; /* 8px top/bottom */
+            font-size: 1.5rem; /* 18px */
             font-weight: bold;
-            margin-top: 24px;
+            margin-top: 1.5rem; /* 24px */
           }
           .qr {
-            margin-top: 16px;
+            margin-top: 1rem; /* 16px */
           }
           .qr img {
-            width: 100px;
-            height: 100px;
+            width: 8.25rem;  /* 100px */
+            height: 8.25rem; /* 100px */
           }
         </style>
       </head>
       <body>
         <div class="badge">
           <div class="partners">
-            <div>AliF Event<br>AliF Event</div>
-            <div>AliF Event<br>AliF Event</div>
+            <div>
+              AliF Event<br>AliF Event
+            </div>
+            <div>
+              AliF Event<br>AliF Event
+            </div>
           </div>
-          <div class="logo">
-            <img src="data:image/png;base64,${alifLogoBase64}" alt="Logo" style="width: 80px;" />
-          </div>
+  <div class="logo">
+   <img src="data:image/png;base64,${alifLogoBase64}" alt="Logo" style="width: 5rem;" />
+
+  </div>
+  
           <div class="main-title">ALIF <span>2025</span></div>
           <div class="subtitle">${fullname}</div>
           <div class="subtitle">${fonction}</div>
@@ -107,47 +117,54 @@ export async function SendBudge(body) {
           </div>
         </div>
       </body>
-    </html>`;
+    </html>
+  `;
 
-  try {
-    const filePath = path.join(os.tmpdir(), `badge-${Date.now()}.png`);
 
-    await nodeHtmlToImage({
-      output: filePath,
-      html,
-      type: 'png',
-      quality: 100,
-    });
+    try {
+        const browser = await puppeteer.launch({
+            headless: 'new',
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        });
+        const page = await browser.newPage();
+        await page.setContent(html, { waitUntil: 'domcontentloaded' });
 
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: 'zakariabensilete@gmail.com',
-        pass: 'fnypqyzuqrjwrpbp',
-      },
-    });
+        const badgeElement = await page.$('.badge');
+        const tempDir = os.tmpdir();
+        const filePath = path.join(tempDir, `badge-${Date.now()}.png`);
+        await badgeElement.screenshot({ path: filePath });
+        await browser.close();
 
-    await transporter.sendMail({
-      from: 'alifevent@gmail.com',
-      to: email,
-      subject: 'Votre badge ALIF 2025',
-      text: `Bonjour ${fullname},\n\nVoici votre badge en pièce jointe.`,
-      attachments: [
-        {
-          filename: 'badge.png',
-          path: filePath,
-        },
-      ],
-    });
+        // Setup transporter
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: 'zakariabensilete@gmail.com',
+                pass: 'fnypqyzuqrjwrpbp',
+            },
+        });
 
-    fs.unlinkSync(filePath); // Clean up temp file
-    return { success: true };
-  } catch (err) {
-    console.error('❌ Error generating badge:', err);
-    return { success: false, error: err };
-  }
+        // Send email
+        await transporter.sendMail({
+            from: 'alifevent@gmail.com',
+            to: email,
+            subject: 'Votre badge ALIF 2025',
+            text: `Bonjour ${fullname},\n\nVoici votre badge en pièce jointe.`,
+            attachments: [
+                {
+                    filename: 'badge.png',
+                    path: filePath,
+                },
+            ],
+        });
+
+        fs.unlinkSync(filePath); // Clean up temp file
+        return { success: true };
+    } catch (err) {
+        console.error('❌ Error generating badge:', err);
+        return { success: false, error: err };
+    }
 }
-
 
 
 
