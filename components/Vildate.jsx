@@ -1,5 +1,5 @@
 "use client"
-import { SendBudge } from "@/actions/badge.action";
+import { SendBudge, updateCond } from "@/actions/badge.action";
 import {
     Modal,
     ModalContent,
@@ -11,13 +11,17 @@ import {
 } from "@heroui/react";
 import { useState } from "react";
 
-const Vildate = ({ }) => {
+const Vildate = ({ _id,fullname,fonction="participant",type="participant",email}) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [postloader, setPostLoader] = useState(false);
 
     const handleOnPress = async () => {
         setPostLoader(true);
-        await SendBudge({ fullname: "zaki bens", fonction: "ceo", type: "participant", email: "z.benslite@esi-sba.dz" })
+        const result = await SendBudge({ fullname, fonction, type, email})
+        if(result?.success){
+            await updateCond(_id.toString())
+        }
+
         onClose()
         setPostLoader(false);
     };

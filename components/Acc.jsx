@@ -12,8 +12,17 @@ import ValidateBudge from "./ValidateBudge";
 
 const Acc = ({ data:Gdata }) => {
 
+  const  sts = {
+    pending:"warning",
+    valid:'success'
+  }
 
+  const packs = [
+    {id:'participant',label:"Pass Individuel"},
+    {id:'premuim',label:"Pack Premium"},
+    {id:'exposant',label:"Pack Premium"},
 
+  ]
 
   const [data, setData] = useState(Gdata)
   const [condidats, setCondidats] = useState(Gdata)
@@ -28,7 +37,7 @@ const Acc = ({ data:Gdata }) => {
 
 
   return (
-    <div className=' flex justify-center w-screen h-screen items-center bg-violet-200' >
+    <div className=' flex justify-center w-screen min-h-screen pt-40 items-center bg-violet-200' >
       <div className="p-4 rounded-3xl bg-white">
         <div className="w-full flex justify-end my-4">
           <ValidateBudge setData={setData} />
@@ -39,26 +48,28 @@ const Acc = ({ data:Gdata }) => {
             <input type="text"  onChange={(e) => onFilter(e.target.value)} className='outline-none w-full bg-gray-100 border-none text-[16px] placeholder:text-[16px] placeholder:font-light' placeholder='Type fullname...' />
           </div>
         </div>
-        <Table aria-label="Example static collection table" className=" lg:w-[70vw]  ">
+        <Table aria-label="Example static collection table" className=" lg:w-[80vw]  ">
           <TableHeader >
             <TableColumn>NAME</TableColumn>
+            <TableColumn>TELE</TableColumn>
             <TableColumn>EMAIL</TableColumn>
             <TableColumn>ROLE</TableColumn>
             <TableColumn>TYPE</TableColumn>
             <TableColumn>STATUS</TableColumn>
-            {/* <TableColumn>Actions</TableColumn> */}
+            <TableColumn>Actions</TableColumn>
           </TableHeader>
           <TableBody>
             {
               condidats?.map((condidat, index) => (
                 <TableRow key={index}>
-                  <TableCell>{condidat?.fullname}</TableCell>
-                  <TableCell>{condidat?.email}</TableCell>
-                  <TableCell>{condidat?.fonction}</TableCell>
-                  <TableCell>{condidat?.type}</TableCell>
+                  <TableCell>{condidat?.data?.nom + " "+condidat?.data?.prenom}</TableCell>
+                  <TableCell>{condidat?.data?.ndeg_telephone}</TableCell>
+                  <TableCell>{condidat?.data?.email}</TableCell>
+                  <TableCell>{condidat?.data?.categories}</TableCell>
+                  <TableCell>{packs.find(item => item.label == condidat?.data?.packs )?.id}</TableCell>
                   {/* <TableCell>{condidat?.status}</TableCell> */}
-                  <TableCell><Chip color="success" variant="flat" >valid</Chip></TableCell>
-                  {/* <TableCell><Vildate data={{}} /> </TableCell> */}
+                  <TableCell><Chip color={sts[condidat?.status]} variant="flat" >{condidat?.status}</Chip></TableCell>
+                  <TableCell><Vildate _id={condidat?._id} type={packs.find(item => item.label == condidat?.data?.packs )?.id} email={condidat?.data?.email}  fonction={condidat?.data?.categories} fullname={condidat?.data?.nom + " "+condidat?.data?.prenom} /> </TableCell>
                 </TableRow>
               ))
             }

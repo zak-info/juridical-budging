@@ -5,12 +5,36 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { connect } from '@/models/mongodb';
-import Condidat from '@/models/condidat.model';
 import { revalidatePath } from 'next/cache';
 import User from '@/models/user.model';
+import Cond from '@/models/cond.model';
 
 
 
+
+
+export async function getConds() {
+    try {
+        await connect();
+        const condidats = await Cond.find({});
+        return { success: true, condidats };
+    } catch (error) {
+        console.error("Error creating MongoDB Medicationtable", error); // Log the error for debugging
+        return { success: false, msg: "An unknown error occurred. " + error.message };
+    }
+}
+
+export async function updateCond(_id) {
+    try {
+        await connect();
+        const condidats = await Cond.updateOne({_id},{$set:{status:"valid"}});
+        revalidatePath("/")
+        return { success: true };
+    } catch (error) {
+        console.error("Error creating MongoDB Medicationtable", error); // Log the error for debugging
+        return { success: false, msg: "An unknown error occurred. " + error.message };
+    }
+}
 
 
 export async function SendBudge(body) {
@@ -127,6 +151,11 @@ export async function SendBudge(body) {
             headless: true,
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
+
+        // const browser = await puppeteer.launch({
+        //     headless: 'new',
+        //     args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        // });
         const page = await browser.newPage();
         await page.setContent(html, { waitUntil: 'domcontentloaded' });
 
@@ -179,6 +208,9 @@ export async function getCondidats() {
         return { success: false, msg: "An unknown error occurred. " + error.message };
     }
 }
+
+
+
 
 export async function createCondidat(data) {
     try {

@@ -1,10 +1,10 @@
 
-import { getCondidats } from "@/actions/badge.action";
+import { getCondidats, getConds } from "@/actions/badge.action";
 import Acc from "@/components/Acc";
 
 export default async function Home() {
 
-  const results = await getCondidats()
+  const results = await getConds()
   return (
    <Acc data={results?.condidats} />
   );
