@@ -36,6 +36,17 @@ export async function updateCond(_id) {
     }
 }
 
+export async function createConds(data) {
+    try {
+        await connect();
+        const condidat = await Cond.create(data);
+        return { success: true, condidat: JSON.stringify(condidat) };
+    } catch (error) {
+        console.error("Error creating MongoDB Medicationtable", error); // Log the error for debugging
+        return { success: false, msg: "An unknown error occurred. " + error.message };
+    }
+}
+
 
 export async function SendBudge(body) {
     console.log("body :", body);

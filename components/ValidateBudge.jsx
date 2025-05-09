@@ -1,5 +1,5 @@
 "use client"
-import { createCondidat, SendBudge } from "@/actions/badge.action";
+import { createCondidat, createConds, SendBudge } from "@/actions/badge.action";
 import {
     Modal,
     ModalContent,
@@ -24,7 +24,7 @@ const ValidateBudge = ({setData }) => {
         setPostLoader(true);
         const result = await SendBudge(credentials);
         if (result?.success) {
-            const resultCond = await createCondidat(credentials)
+            const resultCond = await createConds({data:{...credentials,nom:credentials?.fullname?.split(" ")[0],prenom:credentials?.fullname?.split(" ")[1],categories:credentials?.fonction,packs:credentials?.type},status:"valid"})
             setData(prev => ([JSON.parse(resultCond?.condidat),...prev]))
         }
         setCredentials(null)
