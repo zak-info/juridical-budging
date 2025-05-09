@@ -27,7 +27,7 @@ export async function getConds() {
 export async function updateCond(_id) {
     try {
         await connect();
-        const condidats = await Cond.updateOne({_id},{$set:{status:"valid"}});
+        const condidats = await Cond.updateOne({ _id }, { $set: { status: "valid" } });
         revalidatePath("/")
         return { success: true };
     } catch (error) {
@@ -45,6 +45,11 @@ export async function SendBudge(body) {
     const qrCodePath = path.join(process.cwd(), 'public', 'images', 'qrcode.png');
     const alifLogoBase64 = fs.readFileSync(alifLogoPath, { encoding: 'base64' });
     const qrCodeBase64 = fs.readFileSync(qrCodePath, { encoding: 'base64' });
+
+    const img1 = fs.readFileSync(path.join(process.cwd(), 'public', 'images', 'startup.jpeg'), { encoding: 'base64' });
+    const img2 = fs.readFileSync(path.join(process.cwd(), 'public', 'images', 'qanoune.jpeg'), { encoding: 'base64' });
+    const img3 = fs.readFileSync(path.join(process.cwd(), 'public', 'images', 'juri.jpeg'), { encoding: 'base64' });
+    const img4 = fs.readFileSync(path.join(process.cwd(), 'public', 'images', 'juri.jpeg'), { encoding: 'base64' });
 
 
     const html = `
@@ -119,14 +124,12 @@ export async function SendBudge(body) {
       </head>
       <body>
         <div class="badge">
-          <div class="partners">
-            <div>
-              AliF Event<br>AliF Event
-            </div>
-            <div>
-              AliF Event<br>AliF Event
-            </div>
-          </div>
+         <div class="partners">
+  <img src="data:image/png;base64,${img1}" alt="Startup" style="width: 5rem; height: auto;" />
+  <img src="data:image/png;base64,${img2}" alt="Qanoune" style="width: 5rem; height: auto;" />
+  <img src="data:image/png;base64,${img3}" alt="Juri" style="width: 5rem; height: auto;" />
+  <img src="data:image/png;base64,${img4}" alt="Juri2" style="width: 5rem; height: auto;" />
+</div>
   <div class="logo">
    <img src="data:image/png;base64,${alifLogoBase64}" alt="Logo" style="width: 5rem;" />
 
